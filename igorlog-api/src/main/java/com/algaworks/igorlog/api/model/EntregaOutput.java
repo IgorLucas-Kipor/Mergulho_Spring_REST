@@ -14,7 +14,7 @@ public class EntregaOutput {
 	
 	private Long id;
 	
-	private String nomeCliente;
+	private ClienteResumoModel cliente;
 	
 	private DestinatarioOutput destinatario;
 	

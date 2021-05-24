@@ -36,35 +36,18 @@ public class Entrega {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	/**
-	 * Ao ser chamado o Entrega no EntregaController, vai buscar validar por grupo Default
-	 * Ao chegar na classe entrega, vai converter isso de Fault para o ClienteId
-	 * Ao entrar na classe cliente, validará apenas o cliente, que está no grupo ClienteId
-	 * Demais itens não serão validados por estarem no grupo Default
-	 * 
-	 */
-	@Valid
-	@ConvertGroup(from = Default.class, to = ValidationGroups.ClienteId.class
-	)
-	@NotNull
 	@ManyToOne
 	private Cliente cliente;
 	
-	@NotNull
-	@Valid
 	@Embedded
 	private Destinatario destinario;
 	
-	@NotNull
 	private BigDecimal taxa;
 	
-	@JsonProperty(access = Access.READ_ONLY)
 	@Enumerated(EnumType.STRING)
 	private StatusEntrega status;
 	
-	@JsonProperty(access = Access.READ_ONLY)
 	private OffsetDateTime dataPedido;
 	
-	@JsonProperty(access = Access.READ_ONLY)
 	private OffsetDateTime dataFinalização;
 }

@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.algaworks.igorlog.api.assembler.ClienteAssembler;
+import com.algaworks.igorlog.api.model.ClienteOutput;
+import com.algaworks.igorlog.api.model.input.ClienteInput;
 import com.algaworks.igorlog.domain.model.Cliente;
 import com.algaworks.igorlog.domain.repository.ClienteRepository;
 import com.algaworks.igorlog.domain.service.CatalogoClienteService;
@@ -29,37 +32,34 @@ public class ClienteController {
 
 	private ClienteRepository clienteRepository;
 	private CatalogoClienteService catalogoClienteService;
+	private ClienteAssembler clienteAssembler;
 
 	@GetMapping()
-	public List<Cliente> listar() {
-		return clienteRepository.findAll();
+	public List<ClienteOutput> listar() {
+		List<Cliente> clientes = clienteRepository.findAll();
+		return clienteAssembler.toCollection(clientes);
 	}
 
-	// "from Cliente" = me dê todos os objetos da entidade Cliente
-
 	@GetMapping("/{clienteId}")
-	public ResponseEntity<Cliente> buscar(@PathVariable Long clienteId) {
+	public ResponseEntity<ClienteOutput> buscar(@PathVariable Long clienteId) {
 
 		return clienteRepository.findById(clienteId)
-//				.map(cliente -> ResponseEntity.ok(cliente))
-				.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
-
-//		Optional<Cliente> cliente = clienteRepository.findById(clienteId);
-//		if (cliente.isPresent()) {
-//			return ResponseEntity.ok(cliente.get());
-//		} else {
-//			return ResponseEntity.notFound().build();
-//		}
+				.map(cliente -> ResponseEntity.ok(clienteAssembler.toModel(cliente)))
+				.orElse(ResponseEntity.notFound().build());
+		
 	}
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	public Cliente adicionar(@Valid @RequestBody Cliente cliente) {
-		return catalogoClienteService.salvar(cliente);
+	public ClienteOutput adicionar(@Valid @RequestBody ClienteInput clienteInput) {
+		Cliente cliente = clienteAssembler.toEntity(clienteInput);
+		cliente = catalogoClienteService.salvar(cliente);
+		return clienteAssembler.toModel(cliente);
 	}
 
 	@PutMapping("/{clienteId}")
-	public ResponseEntity<Cliente> atualizar(@Valid @PathVariable Long clienteId, @RequestBody Cliente cliente) {
+	public ResponseEntity<ClienteOutput> atualizar(@Valid @PathVariable Long clienteId, @RequestBody ClienteInput clienteInput) {
+		Cliente cliente = clienteAssembler.toEntity(clienteInput);
 		if (!clienteRepository.existsById(clienteId)) {
 			return ResponseEntity.notFound().build();
 		}
@@ -67,7 +67,7 @@ public class ClienteController {
 		cliente.setId(clienteId);
 		cliente = catalogoClienteService.salvar(cliente);
 
-		return ResponseEntity.ok(cliente);
+		return ResponseEntity.ok(clienteAssembler.toModel(cliente));
 	}
 
 	@DeleteMapping("{clienteId}")
