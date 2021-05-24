@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.algaworks.igorlog.api.model.DestinatarioOutput;
+import com.algaworks.igorlog.api.model.EntregaOutput;
 import com.algaworks.igorlog.domain.model.Entrega;
 import com.algaworks.igorlog.domain.repository.EntregaRepository;
 import com.algaworks.igorlog.domain.service.CadastroEntregaService;
@@ -40,9 +42,24 @@ public class EntregaController {
 	}
 	
 	@GetMapping("/{entregaId") 
-	public ResponseEntity<Entrega> buscar (@PathVariable Long entregaId) {
+	public ResponseEntity<EntregaOutput> buscar (@PathVariable Long entregaId) {
 		return entregaRepository.findById(entregaId)
-				.map(ResponseEntity::ok)
+				.map(entrega -> {
+					EntregaOutput entregaOutput = new EntregaOutput();
+					entregaOutput.setId(entrega.getId());
+					entregaOutput.setNomeCliente(entrega.getCliente().getNome());
+					entregaOutput.setTaxa(entrega.getTaxa());
+					entregaOutput.setStatus(entrega.getStatus());
+					entregaOutput.setDataPedido(entrega.getDataPedido());
+					entregaOutput.setDataFinalizacao(entrega.getDataFinalização());
+					entregaOutput.setDestinatario(new DestinatarioOutput());
+					entregaOutput.getDestinatario().setLogradouro(entrega.getDestinario().getLogradouro());
+					entregaOutput.getDestinatario().setBairro(entrega.getDestinario().getBairro());
+					entregaOutput.getDestinatario().setComplemento(entrega.getDestinario().getComplemento());
+					entregaOutput.getDestinatario().setNome(entrega.getDestinario().getNome());
+					entregaOutput.getDestinatario().setNumero(entrega.getDestinario().getNumero());
+					return ResponseEntity.ok(entregaOutput);
+				})
 				.orElse(ResponseEntity.notFound().build());
 	}
 	
