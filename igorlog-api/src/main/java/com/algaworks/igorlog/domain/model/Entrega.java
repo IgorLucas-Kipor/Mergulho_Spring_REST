@@ -15,6 +15,8 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
+import com.algaworks.igorlog.domain.exception.DomainException;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -47,7 +49,7 @@ public class Entrega {
 	
 	private OffsetDateTime dataPedido;
 	
-	private OffsetDateTime dataFinalização;
+	private OffsetDateTime dataFinalizacao;
 
 	public Ocorrencia adicionarOcorrencia(String descricao) {
 		Ocorrencia ocorrencia = new Ocorrencia();
@@ -58,5 +60,25 @@ public class Entrega {
 		this.getOcorrencias().add(ocorrencia);
 		
 		return ocorrencia;
+	}
+
+	public void finalizar() {
+		if (StatusEntrega.PENDENTE.equals(getStatus())) {
+			setStatus(StatusEntrega.FINALIZADA);
+			setDataFinalizacao(OffsetDateTime.now());
+		} else {
+			throw new DomainException("Entrega não pode ser finalizada.");
+		}
+		
+	}
+
+	public void cancelar() {
+		if (StatusEntrega.PENDENTE.equals(getStatus())) {
+			setStatus(StatusEntrega.FINALIZADA);
+			setDataFinalizacao(OffsetDateTime.now());
+		} else {
+			throw new DomainException("Entrega não pode ser cancelada.");
+		}
+		
 	}
 }
